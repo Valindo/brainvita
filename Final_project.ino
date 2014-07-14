@@ -43,7 +43,7 @@ int blink_interval = 500;
 int i,j;
 
 //Flagging whether picking or placing!
-int flag = 0;
+boolean flag = false;
 
 // temp variables
 node * temp_1;
@@ -208,10 +208,10 @@ void mapping()
 //Printing the current state of the LEDs i.e lighting em' up :D
 void print_state()
 {
-  if ( current->data == 0 )
-  {
-    flag = 0;
-  }
+  //if ( current->data == 0 )
+  //{
+  //  flag = 0;
+  //}
   // register 1
   digitalWrite(latch,LOW);
   for ( i = 0; i<8 ; i++ )
@@ -247,37 +247,19 @@ void print_state()
     digitalWrite(clock_2,HIGH);
   }
   digitalWrite(latch_2,HIGH);
-  
-   int b_6 = digitalRead(pick);
 
-  if ( b_6 == LOW )
-  {
-    flag++;
-    if ( flag >= 2 )
-    {
-      flag = 0;
-    }
 
-    if(flag == 0)
-    {
-      blink_interval = 500;
-    } 
-    else if (flag == 1) 
-    {
-      blink_interval = 100;
-    }
-  }
 
-//  if ( flag == 0 )
-//  {
-//    delay(100);
-//  }
-//  else
-//  {
-//    delay(30);
-//  }
-  
- 
+  //  if ( flag == 0 )
+  //  {
+  //    delay(100);
+  //  }
+  //  else
+  //  {
+  //    delay(30);
+  //  }
+
+
 }
 
 //GAME LOGIC
@@ -310,7 +292,10 @@ void make_move( int i )
   flag = 0;
   if ( end_of_game() == 1 )
   {
-    delay(2000);
+    print_state();
+    analogWrite(A0,255);
+    delay(1000);
+    analogWrite(A0,0);
     start_of_game();
   }
 }
@@ -354,24 +339,27 @@ int check_move_eog(int i, int j)
 {
   temp_1 = led[i]->_direction[j];
   temp_2 = temp_1->_direction[j];
-  if (temp_1 != NULL)
+  if ( led[i] != NULL )
   {
-    if ( temp_1->data == 1 )
+    if (temp_1 != NULL)
     {
-      if( temp_2 != NULL )
+      if ( temp_1->data == 1 )
       {
-        if ( temp_2->data == 0 )
+        if( temp_2 != NULL )
         {
-          return 1;
+          if ( temp_2->data == 0 )
+          {
+            return 1;
+          }
         }
-      }
-      else
-      {
-        return 0;
+        else
+        {
+          return 0;
+        }
       }
     }
   }    
-        
+
 }
 
 //end of game
@@ -432,15 +420,17 @@ void setup()
   start_of_game();
   mapping();
   print_state();
-  
+
   pinMode(A0,OUTPUT);
+  pinMode(A1,OUTPUT);
+  pinMode(A2,OUTPUT);
 
 }
 
 void loop()
 {
-  
-//  print_state();
+
+  //  print_state();
   int b_0 = digitalRead(west);
   int b_1 = digitalRead(east);
   int b_2 = digitalRead(north_east);
@@ -448,7 +438,7 @@ void loop()
   int b_4 = digitalRead(south_east);
   int b_5 = digitalRead(south_west);
   boolean update_board = false;
-  
+
   if ( b_0 == LOW )
   {
     button_press(0);
@@ -480,6 +470,27 @@ void loop()
     update_board = true;
   }
 
+
+  int b_6 = digitalRead(pick);
+
+  if ( b_6 == LOW )
+  {
+    flag = !flag;
+    //if ( flag >= 2 )
+    //{
+    //  flag = 0;
+    //}
+
+  }
+  if(flag == 0)
+  {
+    blink_interval = 500;
+  } 
+  if (flag == 1) 
+  {
+    blink_interval = 150;
+  }
+
   // todo -- change the interval based on board state
   if(millis() - previousMillis > blink_interval) {
     previousMillis = millis();
@@ -491,7 +502,20 @@ void loop()
     delay(100);
   } 
 
+  if (flag == 0)
+  {
+    analogWrite(A1,255);
+    analogWrite(A2,0);
+  }
+  if ( flag == 1 )
+  {
+    analogWrite(A1,0);
+    analogWrite(A2,255);
+  }
+
 }
+
+
 
 
 
